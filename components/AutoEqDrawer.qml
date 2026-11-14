@@ -4,32 +4,6 @@ import QtQuick.Layouts
 import qs.Commons
 import qs.Ui
 
-        text: parent.parent.aeqOn ? "ON" : "OFF"
-        textFormat: Text.PlainText
-        color: parent.parent.aeqOn ? drawerRoot.accent : Qt.rgba(drawerRoot.foreground.r, drawerRoot.foreground.g, drawerRoot.foreground.b, 0.7)
-        font.family: drawerRoot.uiFont
-        font.pixelSize: Style.font.caption
-        font.bold: true
-      }
-    }
-
-    MouseArea {
-      id: aeqToggleMouse
-      anchors.fill: parent
-      hoverEnabled: true
-      cursorShape: Qt.PointingHandCursor
-      onClicked: {
-        if (!drawerRoot.eq || !drawerRoot.eq.autoeq) {
-          drawerRoot.autoeqOpen = true;
-          autoeqInput.forceActiveFocus();
-          return;
-        }
-        if (drawerRoot.hostWidget) drawerRoot.hostWidget.toggleAutoEq();
-      }
-    }
-  }
-}
-
 BorderSurface {
   id: drawerRoot
   property bool autoeqOpen: false
@@ -133,3 +107,21 @@ BorderSurface {
           color: drawerRoot.foreground
           font.family: drawerRoot.uiFont
           font.pixelSize: Style.font.caption
+        }
+
+        MouseArea {
+          id: resMouse
+          anchors.fill: parent
+          hoverEnabled: true
+          cursorShape: Qt.PointingHandCursor
+          onClicked: {
+            if (drawerRoot.hostWidget) {
+              drawerRoot.hostWidget.applyAutoEq(modelData.path, modelData.name + " (" + modelData.source + ")");
+              drawerRoot.profileApplied();
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -220,12 +220,6 @@ Panel {
         accent: root.accent
         uiFont: root.uiFont
       }
-                }
-              }
-            }
-          }
-        }
-      }
 
       Text {
         visible: root.hostWidget && root.hostWidget.lastError.length > 0

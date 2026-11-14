@@ -124,6 +124,32 @@ ColumnLayout {
 
         Text {
           anchors.verticalCenter: parent.verticalCenter
+          text: parent.parent.aeqOn ? "ON" : "OFF"
+          textFormat: Text.PlainText
+          color: parent.parent.aeqOn ? eqRoot.accent : Qt.rgba(eqRoot.foreground.r, eqRoot.foreground.g, eqRoot.foreground.b, 0.7)
+          font.family: eqRoot.uiFont
+          font.pixelSize: Style.font.caption
+          font.bold: true
+        }
+      }
+
+      MouseArea {
+        id: aeqToggleMouse
+        anchors.fill: parent
+        hoverEnabled: true
+        cursorShape: Qt.PointingHandCursor
+        onClicked: {
+          if (!eqRoot.eq || !eqRoot.eq.autoeq) {
+            eqRoot.autoeqOpen = true;
+            autoeqDrawer.focusSearch();
+            return;
+          }
+          if (eqRoot.hostWidget) eqRoot.hostWidget.toggleAutoEq();
+        }
+      }
+    }
+  }
+
   AutoEqDrawer {
     id: autoeqDrawer
     autoeqOpen: eqRoot.autoeqOpen
@@ -132,25 +158,6 @@ ColumnLayout {
     accent: eqRoot.accent
     uiFont: eqRoot.uiFont
     onProfileApplied: eqRoot.autoeqOpen = false
-  }
-
-          }
-
-          MouseArea {
-            id: resMouse
-            anchors.fill: parent
-            hoverEnabled: true
-            cursorShape: Qt.PointingHandCursor
-            onClicked: {
-              if (eqRoot.hostWidget) {
-                eqRoot.hostWidget.applyAutoEq(modelData.path, modelData.name + " (" + modelData.source + ")");
-                eqRoot.autoeqOpen = false;
-              }
-            }
-          }
-        }
-      }
-    }
   }
 
   GridLayout {
@@ -348,3 +355,9 @@ ColumnLayout {
             color: Qt.rgba(eqRoot.foreground.r, eqRoot.foreground.g, eqRoot.foreground.b, 0.55)
             font.family: eqRoot.uiFont
             font.pixelSize: Style.font.caption
+          }
+        }
+      }
+    }
+  }
+}
