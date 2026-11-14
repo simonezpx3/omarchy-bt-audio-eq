@@ -2,6 +2,8 @@
 
 Omarchy Quattro bar widget for controlling Bluetooth A2DP codecs, codec quality, PipeWire sample rates, live audio telemetry, and a 2-stage PipeWire Equalizer with AutoEq support.
 
+![BT & Audio EQ Panel](assets/screenshot.png)
+
 ## Features
 
 - **A2DP Codec Switcher**: Lists available `a2dp-sink*` profiles from `pactl list cards` (`LDAC`, `AAC`, `SBC-XQ`, `SBC`, etc.) and switches profiles live.
@@ -28,6 +30,16 @@ Omarchy Quattro bar widget for controlling Bluetooth A2DP codecs, codec quality,
 - **PipeWire EQ config**: Writes the `Equalizer` `filter-chain` (`effect_input.bt_eq`) to `~/.config/pipewire/pipewire.conf.d/60-bt-eq.conf` and restarts `pipewire` only when the AutoEq filter slot layout changes.
 - **State & Cache**: Stores EQ state and 7-day AutoEq index cache in `~/.local/state/simonez-btquality/`.
 - **Network**: AutoEq search and profile download fetch over HTTPS strictly from `raw.githubusercontent.com` (`jaakkopasanen/AutoEq`) with response size limits (`2 MB` index, `128 KB` profile).
+
+## Acknowledgments
+
+This plugin builds on the work of the following projects and maintainers:
+
+- **[Omarchy](https://omarchy.org/)** (DHH & contributors) — Arch Linux + Hyprland desktop and the Omarchy Quattro plugin system.
+- **[Quickshell](https://quickshell.outfoxxed.me/)** (outfoxxed & contributors) — Qt Quick / Wayland shell powering the bar widget and panel UI.
+- **[PipeWire](https://pipewire.org/) & [WirePlumber](https://pipewire.pages.freedesktop.org/wireplumber/)** — `filter-chain` Equalizer (`bq_peaking` / `bq_lowshelf` / `bq_highshelf`), `pw-dump`, `pw-top`, `pw-metadata`, `pw-cli`, `pipewire-pulse` (`pactl`), and BlueZ5 A2DP LDAC/AAC bitrate controls.
+- **[AutoEq](https://github.com/jaakkopasanen/AutoEq)** (Jaakko Pasanen & contributors) — Open-source headphone measurement and parametric/graphic EQ profile database.
+- **[BlueZ](https://www.bluez.org/)** — Official Linux Bluetooth protocol stack.
 
 ## License
 
