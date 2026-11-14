@@ -15,7 +15,7 @@
   "barWidget": {
     "displayName": "BT & Audio EQ",
     "description": "Control Bluetooth A2DP codecs, LDAC/AAC quality, PipeWire sample rates, and 10-band EQ with AutoEq.",
-    "category": "Network",
+    "category": "Audio",
     "aliases": ["bluetooth", "bt", "ldac", "aac", "sbc", "audio", "eq", "equalizer", "autoeq", "pipewire"],
     "allowMultiple": false,
     "defaultSection": "right"

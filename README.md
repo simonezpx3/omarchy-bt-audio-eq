@@ -17,6 +17,12 @@ Omarchy Quattro bar widget for controlling Bluetooth A2DP codecs, codec quality,
   - Stage 2: 10-band ISO graphic EQ (`31 Hz` – `16 kHz`, `±15 dB`) layered on top of Stage 1 with `Bass`, `V-Shape`, `Vocal`, `Warm`, `Flat`, and `Custom` presets.
 - **Event-Driven Updates**: Uses `pactl subscribe` for instant connect/disconnect/profile updates with zero background Python polling when the panel is closed.
 
+## Installation
+
+```bash
+omarchy plugin add https://github.com/simonezpx3/omarchy-bt-audio-eq.git --enable
+```
+
 ## Requirements
 
 - Omarchy 4 (Quattro / Quickshell)

@@ -49,6 +49,7 @@ def get_bt_device_info() -> tuple[str, str, str, str, list[dict]]:
         )
         if res.returncode != 0:
             return "", "", "", "", []
+        candidates: list[tuple[str, str, str, str, list[dict]]] = []
         for block in res.stdout.split("Card #"):
             if "bluez_card." not in block:
                 continue
@@ -68,13 +69,21 @@ def get_bt_device_info() -> tuple[str, str, str, str, list[dict]]:
                         "label": c_label,
                         "active": p_name == active_prof,
                     })
-            return (
+            candidates.append((
                 alias_m.group(1) if alias_m else "Bluetooth",
                 active_prof,
                 hci_m.group(1) if hci_m else "",
                 card_m.group(1) if card_m else "",
                 codecs,
-            )
+            ))
+        for item in candidates:
+            if item[1].startswith("a2dp-sink"):
+                return item
+        for item in candidates:
+            if item[4]:
+                return item
+        if candidates:
+            return candidates[0]
     except (OSError, subprocess.SubprocessError, ValueError):
         return "", "", "", "", []
     return "", "", "", "", []
