@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "simonez.btquality",
+  "name": "BT & Audio EQ",
+  "version": "1.0.0",
+  "author": "simonez & Arci",
+  "license": "MIT",
+  "description": "Bluetooth codec & quality switcher (LDAC, AAC, SBC-XQ, SBC), PipeWire sample rate selector, live telemetry, and 2-stage 10-band EQ with AutoEq.",
+  "kinds": [
+    "bar-widget"
+  ],
+  "entryPoints": {
+    "barWidget": "BarWidget.qml"
+  },
+  "barWidget": {
+    "displayName": "BT & Audio EQ",
+    "description": "Control Bluetooth A2DP codecs, LDAC/AAC quality, PipeWire sample rates, and 10-band EQ with AutoEq.",
+    "category": "Network",
+    "aliases": ["bluetooth", "bt", "ldac", "aac", "sbc", "audio", "eq", "equalizer", "autoeq", "pipewire"],
+    "allowMultiple": false,
+    "defaultSection": "right"
+  }
+}
