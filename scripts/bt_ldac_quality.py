@@ -7,6 +7,13 @@ import subprocess
 import sys
 import time
 
+from bt_adapters import (
+    card_to_mac,
+    first_paired_device_on_adapter,
+    get_bt_adapters,
+    load_last_bt_device,
+    save_last_bt_device,
+)
 from eq_manager import (
     AAC_MODE_RE,
     AAC_MODES,
@@ -30,13 +37,6 @@ from eq_manager import (
 )
 from eq_manager import (
     apply_autoeq as _eq_apply_autoeq,
-)
-from bt_adapters import (
-    card_to_mac,
-    first_paired_device_on_adapter,
-    get_bt_adapters,
-    load_last_bt_device,
-    save_last_bt_device,
 )
 from pw_telemetry import (
     _format_rate_label,
