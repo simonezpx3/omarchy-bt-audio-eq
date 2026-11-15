@@ -4,6 +4,8 @@ Omarchy Quattro bar widget for controlling Bluetooth A2DP codecs, codec quality,
 
 ![BT & Audio EQ Panel](assets/screenshot.png)
 
+![System Audio & EQ Only Mode](assets/screenshot-eq.png)
+
 ## Features
 
 - **A2DP Codec Switcher**: Lists available `a2dp-sink*` profiles from `pactl list cards` (`LDAC`, `AAC`, `SBC-XQ`, `SBC`, etc.) and switches profiles live.
