@@ -17,6 +17,11 @@ Omarchy Quattro bar widget for controlling Bluetooth A2DP codecs, codec quality,
   - Stage 2: 10-band ISO graphic EQ (`31 Hz` – `16 kHz`, `±15 dB`) layered on top of Stage 1 with `Bass`, `V-Shape`, `Vocal`, `Warm`, `Flat`, and `Custom` presets.
 - **Event-Driven Updates**: Uses `pactl subscribe` for instant connect/disconnect/profile updates with zero background Python polling when the panel is closed.
 
+## Sample Rate Behavior & Limitations
+
+- **Bluetooth A2DP (`LDAC` / `AAC` / `SBC`)**: The active A2DP sample rate (e.g., `96 kHz` vs `48 kHz` on LDAC) is negotiated and locked by BlueZ and the headphones at connection time (`EnumFormat`). Changing `clock.force-rate` at runtime via `pw-metadata` cannot renegotiate an already-established Bluetooth transport. If a device falls back to `48 kHz` (for example, after switching between Bluetooth adapters or switching codecs such as `AAC`/`SBC` → `LDAC`), power-cycling the headphones is required to renegotiate `96 kHz`.
+- **System PCM (`ALSA`)**: When an ALSA output sink is `SUSPENDED` or `IDLE`, PipeWire defers hardware sample-rate reconfiguration until an audio stream starts playing.
+
 ## Installation
 
 ```bash
