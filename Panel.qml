@@ -71,7 +71,6 @@ Panel {
     anchorItem: root.anchorItem
     owner: root
     bar: root.bar
-    centerOnBar: true
     padding: Style.spacing.popupPadding
     contentWidth: panel.fittedContentWidth(Style.space(440))
     contentHeight: panel.fittedContentHeight(mainColumn.implicitHeight + Style.space(6), Style.space(760))
