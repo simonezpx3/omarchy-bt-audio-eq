@@ -220,7 +220,7 @@ def get_pw_top_telemetry(target_sink: str = "") -> dict:
 
 
 def get_usb_power_telemetry(hci: str = "") -> dict:
-    data = {"hci": hci, "usbPower": "", "usbStatus": ""}
+    data = {"hci": hci, "usbPower": "", "usbStatus": "", "adapterHw": ""}
     try:
         candidates = [Path(f"/sys/class/bluetooth/{hci}/device")] if hci else sorted(Path("/sys/class/bluetooth").glob("hci*/device"))
         for bt_path in candidates:
@@ -232,9 +232,18 @@ def get_usb_power_telemetry(hci: str = "") -> dict:
                 vid = parent / "idVendor"
                 if ctrl.exists() and vid.exists():
                     stat = parent / "power/runtime_status"
+                    mfg_f = parent / "manufacturer"
+                    prod_f = parent / "product"
+                    mfg = mfg_f.read_text(encoding="utf-8", errors="ignore").strip().replace("_", " ") if mfg_f.exists() else ""
+                    prod = prod_f.read_text(encoding="utf-8", errors="ignore").strip().replace("_", " ") if prod_f.exists() else ""
+                    if mfg and prod and not prod.lower().startswith(mfg.lower()):
+                        hw_name = f"{mfg} {prod}"
+                    else:
+                        hw_name = prod or mfg
                     data["hci"] = data["hci"] or bt_path.parent.name
                     data["usbPower"] = ctrl.read_text().strip()
                     data["usbStatus"] = stat.read_text().strip() if stat.exists() else ""
+                    data["adapterHw"] = hw_name
                     return data
     except (OSError, subprocess.SubprocessError, ValueError):
         return data

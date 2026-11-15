@@ -163,7 +163,7 @@ ColumnLayout {
     }
   
     RowLayout {
-      visible: cqRoot.hostWidget && cqRoot.hostWidget.rateOptions && cqRoot.hostWidget.rateOptions.length > 0
+      visible: cqRoot.hostWidget && cqRoot.hostWidget.rateOptions && cqRoot.hostWidget.rateOptions.length > 1
       Layout.fillWidth: true
       spacing: Style.space(6)
   
@@ -202,6 +202,126 @@ ColumnLayout {
             cursorShape: Qt.PointingHandCursor
             onClicked: {
               if (cqRoot.hostWidget) cqRoot.hostWidget.setSampleRate(modelData.hz);
+            }
+          }
+        }
+      }
+    }
+
+    ColumnLayout {
+      visible: cqRoot.hostWidget && cqRoot.hostWidget.adapters && cqRoot.hostWidget.adapters.length >= 2
+      Layout.fillWidth: true
+      spacing: Style.space(6)
+
+      Text {
+        text: "ADAPTER"
+        textFormat: Text.PlainText
+        color: Qt.rgba(cqRoot.foreground.r, cqRoot.foreground.g, cqRoot.foreground.b, 0.55)
+        font.family: cqRoot.uiFont
+        font.pixelSize: Style.font.xs
+        font.bold: true
+      }
+
+      RowLayout {
+        Layout.fillWidth: true
+        spacing: Style.space(6)
+
+        Repeater {
+          model: (cqRoot.hostWidget && cqRoot.hostWidget.adapters) ? cqRoot.hostWidget.adapters : []
+          delegate: RowLayout {
+            id: adapterItem
+            required property var modelData
+            readonly property bool isAdapterActive: Boolean(modelData.active)
+            readonly property bool isAdapterPowered: Boolean(modelData.powered)
+            readonly property bool isAdapterBusy: cqRoot.hostWidget && cqRoot.hostWidget.busy
+
+            Layout.fillWidth: true
+            Layout.preferredWidth: 1
+            spacing: Style.space(4)
+
+            CursorSurface {
+              id: adapterPill
+              Layout.fillWidth: true
+              implicitWidth: adapterTxt.implicitWidth + Style.space(12)
+              implicitHeight: Math.max(adapterTxt.implicitHeight + Style.space(8), Style.space(26))
+              current: adapterItem.isAdapterActive
+              hasCursor: adapterMouse.containsMouse
+              bordered: true
+              foreground: cqRoot.foreground
+              accent: cqRoot.accent
+              opacity: !adapterItem.isAdapterPowered ? 0.5 : ((adapterItem.modelData.paired || adapterItem.isAdapterActive) ? 1.0 : 0.72)
+
+              Text {
+                id: adapterTxt
+                anchors.centerIn: parent
+                text: adapterItem.modelData.label + (adapterItem.modelData.paired || adapterItem.isAdapterActive ? "" : " *")
+                textFormat: Text.PlainText
+                maximumLineCount: 1
+                color: adapterItem.isAdapterActive ? cqRoot.accent : cqRoot.foreground
+                font.family: cqRoot.uiFont
+                font.pixelSize: Style.font.caption
+                font.bold: adapterItem.isAdapterActive
+              }
+
+              MouseArea {
+                id: adapterMouse
+                anchors.fill: parent
+                hoverEnabled: true
+                enabled: !adapterItem.isAdapterBusy && adapterItem.isAdapterPowered
+                cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
+                onClicked: {
+                  if (cqRoot.hostWidget) cqRoot.hostWidget.setAdapter(adapterItem.modelData.hci);
+                }
+              }
+            }
+
+            CursorSurface {
+              id: adapterPowerPill
+              implicitWidth: adapterPowerRow.implicitWidth + Style.space(12)
+              implicitHeight: adapterPill.implicitHeight
+              current: adapterItem.isAdapterPowered
+              hasCursor: powerMouse.containsMouse
+              bordered: true
+              foreground: cqRoot.foreground
+              accent: cqRoot.accent
+
+              Row {
+                id: adapterPowerRow
+                anchors.centerIn: parent
+                spacing: Style.space(5)
+
+                Rectangle {
+                  width: 8
+                  height: 8
+                  radius: 4
+                  anchors.verticalCenter: parent.verticalCenter
+                  color: adapterItem.isAdapterPowered ? "#98e28c" : "#f7768e"
+                }
+
+                Text {
+                  anchors.verticalCenter: parent.verticalCenter
+                  text: adapterItem.isAdapterPowered ? "ON" : "OFF"
+                  textFormat: Text.PlainText
+                  maximumLineCount: 1
+                  color: adapterItem.isAdapterPowered ? cqRoot.accent : Qt.rgba(cqRoot.foreground.r, cqRoot.foreground.g, cqRoot.foreground.b, 0.7)
+                  font.family: cqRoot.uiFont
+                  font.pixelSize: Style.font.caption
+                  font.bold: true
+                }
+              }
+
+              MouseArea {
+                id: powerMouse
+                anchors.fill: parent
+                hoverEnabled: true
+                enabled: !adapterItem.isAdapterBusy
+                cursorShape: enabled ? Qt.PointingHandCursor : Qt.WaitCursor
+                onClicked: {
+                  if (cqRoot.hostWidget) {
+                    cqRoot.hostWidget.setAdapterPower(adapterItem.modelData.hci, !adapterItem.isAdapterPowered);
+                  }
+                }
+              }
             }
           }
         }

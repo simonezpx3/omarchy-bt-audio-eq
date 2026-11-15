@@ -31,6 +31,13 @@ from eq_manager import (
 from eq_manager import (
     apply_autoeq as _eq_apply_autoeq,
 )
+from bt_adapters import (
+    card_to_mac,
+    first_paired_device_on_adapter,
+    get_bt_adapters,
+    load_last_bt_device,
+    save_last_bt_device,
+)
 from pw_telemetry import (
     _format_rate_label,
     get_bt_device_info,
@@ -60,6 +67,10 @@ def build_status(ok: bool = True, error: str = "") -> dict:
     quality = read_quality()
     aac_mode = read_aac_mode()
     device, profile, hci, card, codecs = get_bt_device_info()
+    if card:
+        active_mac = card_to_mac(card)
+        if active_mac:
+            save_last_bt_device(active_mac, device)
     telemetry = {}
     telemetry.update(get_sink_telemetry())
     telemetry.update(get_pw_top_telemetry(telemetry.get("sinkName", "")))
@@ -124,6 +135,7 @@ def build_status(ok: bool = True, error: str = "") -> dict:
         "device": device,
         "profile": profile,
         "card": card,
+        "adapters": get_bt_adapters(active_hci=hci, active_card=card),
         "codecs": codecs,
         "telemetry": telemetry,
         "eq": eq_state,
@@ -220,6 +232,100 @@ def set_quality(target: str) -> dict:
     return build_status(ok=True)
 
 
+def set_adapter(target_hci: str) -> dict:
+    """Switch active Bluetooth audio device to target_hci adapter."""
+    target_name = target_hci.strip().lower()
+    if not re.match(r"^hci\d+$", target_name):
+        return build_status(ok=False, error=f"Invalid adapter: {target_hci}")
+
+    device, _, active_hci, card, _ = get_bt_device_info()
+    adapters = get_bt_adapters(active_hci=active_hci, active_card=card)
+    target = next((a for a in adapters if a["hci"] == target_name), None)
+    if not target:
+        return build_status(ok=False, error=f"Adapter {target_name} not found")
+    if target["active"]:
+        return build_status(ok=True)
+
+    last_dev = load_last_bt_device()
+    dev_mac = card_to_mac(card) or last_dev.get("mac", "")
+    dev_label = device or last_dev.get("name", "")
+    if not dev_mac:
+        dev_mac, paired_name = first_paired_device_on_adapter(target["address"])
+        dev_label = dev_label or paired_name
+    if not dev_mac:
+        return build_status(ok=False, error="No Bluetooth audio device found")
+    if not target.get("paired"):
+        label = dev_label or dev_mac
+        return build_status(ok=False, error=f"{label} is not paired on {target_name}")
+
+    current = next((a for a in adapters if a["hci"] == active_hci), None)
+    cmds: list[str] = []
+    if current and active_hci:
+        cmds.extend([f"select {current['address']}", f"disconnect {dev_mac}"])
+    cmds.extend([f"select {target['address']}", "power on", f"connect {dev_mac}", "quit"])
+
+    try:
+        subprocess.run(
+            ["bluetoothctl"],
+            input="\n".join(cmds) + "\n",
+            capture_output=True,
+            text=True,
+            timeout=12,
+            check=False,
+        )
+    except (OSError, subprocess.SubprocessError) as exc:
+        return build_status(ok=False, error=f"Adapter switch failed: {exc}")
+
+    for _ in range(10):
+        _, _, new_hci, _, _ = get_bt_device_info()
+        if new_hci == target_name:
+            return build_status(ok=True)
+        time.sleep(0.3)
+
+    return build_status(ok=False, error=f"Failed to connect {device or dev_mac} on {target_name}")
+
+
+def set_adapter_power(target_hci: str, state: str) -> dict:
+    """Power Bluetooth adapter target_hci on or off via BlueZ D-Bus."""
+    target_name = target_hci.strip().lower()
+    if not re.match(r"^hci\d+$", target_name):
+        return build_status(ok=False, error=f"Invalid adapter: {target_hci}")
+
+    norm = state.strip().lower()
+    if norm in ("on", "true", "1"):
+        val = "true"
+    elif norm in ("off", "false", "0"):
+        val = "false"
+    else:
+        return build_status(ok=False, error=f"Invalid power state: {state}")
+
+    try:
+        res = subprocess.run(
+            [
+                "busctl",
+                "set-property",
+                "org.bluez",
+                f"/org/bluez/{target_name}",
+                "org.bluez.Adapter1",
+                "Powered",
+                "b",
+                val,
+            ],
+            capture_output=True,
+            text=True,
+            timeout=3,
+            check=False,
+        )
+        if res.returncode != 0:
+            err = res.stderr.strip() or f"Failed to set {target_name} power {norm}"
+            return build_status(ok=False, error=err)
+    except (OSError, subprocess.SubprocessError) as exc:
+        return build_status(ok=False, error=f"Adapter power failed: {exc}")
+
+    time.sleep(0.25)
+    return build_status(ok=True)
+
+
 def main() -> int:
     args = sys.argv[1:]
     if not args or args[0] == "get":
@@ -235,6 +341,14 @@ def main() -> int:
         return 0 if status["ok"] else 1
     if args[0] == "rate-set" and len(args) >= 2:
         status = set_sample_rate(args[1])
+        print(json.dumps(status))
+        return 0 if status["ok"] else 1
+    if args[0] == "adapter-set" and len(args) >= 2:
+        status = set_adapter(args[1])
+        print(json.dumps(status))
+        return 0 if status["ok"] else 1
+    if args[0] == "adapter-power" and len(args) >= 3:
+        status = set_adapter_power(args[1], args[2])
         print(json.dumps(status))
         return 0 if status["ok"] else 1
     if args[0] == "eq-toggle":

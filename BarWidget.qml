@@ -20,6 +20,7 @@ BarWidget {
   property int activeRate: 48000
   property string deviceName: ""
   property string activeProfile: ""
+  property var adapters: []
   property var codecs: []
   property string lastError: ""
   property var autoeqResults: []
@@ -42,7 +43,8 @@ BarWidget {
     busy: "",
     xruns: 0,
     usbPower: "",
-    usbStatus: ""
+    usbStatus: "",
+    adapterHw: ""
   })
 
   readonly property string scriptPath: Qt.resolvedUrl("scripts/bt_ldac_quality.py").toString().replace(/^file:\/\//, "")
@@ -64,6 +66,7 @@ BarWidget {
       if (data.activeRate !== undefined) root.activeRate = Number(data.activeRate);
       root.deviceName = data.device ? String(data.device) : "";
       root.activeProfile = data.profile ? String(data.profile) : "";
+      root.adapters = data.adapters ? data.adapters : [];
       root.codecs = data.codecs ? data.codecs : [];
       root.lastError = data.error ? String(data.error) : "";
       if (data.telemetry) {
@@ -102,6 +105,22 @@ BarWidget {
     if (setProc.running) return;
     root.lastError = "";
     setProc.command = ["python3", "-B", root.scriptPath, "rate-set", String(hz)];
+    setProc.running = true;
+  }
+
+  function setAdapter(hciName) {
+    if (setProc.running) return;
+    root.busy = true;
+    root.lastError = "";
+    setProc.command = ["python3", "-B", root.scriptPath, "adapter-set", String(hciName)];
+    setProc.running = true;
+  }
+
+  function setAdapterPower(hciName, enabled) {
+    if (setProc.running) return;
+    root.busy = true;
+    root.lastError = "";
+    setProc.command = ["python3", "-B", root.scriptPath, "adapter-power", String(hciName), enabled ? "on" : "off"];
     setProc.running = true;
   }
 

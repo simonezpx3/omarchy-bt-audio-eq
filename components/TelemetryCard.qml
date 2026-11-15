@@ -73,6 +73,26 @@ BorderSurface {
     }
 
     Text {
+      visible: telGrid.isBt && Boolean(telCard.tel.adapterHw)
+      text: "Adapter"
+      textFormat: Text.PlainText
+      color: Qt.rgba(telCard.foreground.r, telCard.foreground.g, telCard.foreground.b, 0.55)
+      font.family: telCard.uiFont
+      font.pixelSize: Style.font.caption
+    }
+    Text {
+      visible: telGrid.isBt && Boolean(telCard.tel.adapterHw)
+      Layout.fillWidth: true
+      horizontalAlignment: Text.AlignRight
+      elide: Text.ElideRight
+      text: telCard.tel.adapterHw || "—"
+      textFormat: Text.PlainText
+      color: telCard.foreground
+      font.family: telCard.uiFont
+      font.pixelSize: Style.font.bodySmall
+    }
+
+    Text {
       text: telGrid.isBt ? "Adapter Power" : "Volume / Mute"
       textFormat: Text.PlainText
       color: Qt.rgba(telCard.foreground.r, telCard.foreground.g, telCard.foreground.b, 0.55)
