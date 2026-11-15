@@ -259,15 +259,23 @@ def set_adapter(target_hci: str) -> dict:
         return build_status(ok=False, error=f"{label} is not paired on {target_name}")
 
     current = next((a for a in adapters if a["hci"] == active_hci), None)
-    cmds: list[str] = []
-    if current and active_hci:
-        cmds.extend([f"select {current['address']}", f"disconnect {dev_mac}"])
-    cmds.extend([f"select {target['address']}", "power on", f"connect {dev_mac}", "quit"])
-
     try:
+        if current and active_hci:
+            subprocess.run(
+                ["bluetoothctl"],
+                input=f"select {current['address']}\ndisconnect {dev_mac}\nquit\n",
+                capture_output=True,
+                text=True,
+                timeout=8,
+                check=False,
+            )
+            for _ in range(6):
+                time.sleep(0.25)
+                if not get_bt_device_info()[2]:
+                    break
         subprocess.run(
             ["bluetoothctl"],
-            input="\n".join(cmds) + "\n",
+            input=f"select {target['address']}\npower on\nconnect {dev_mac}\nquit\n",
             capture_output=True,
             text=True,
             timeout=12,
@@ -277,8 +285,16 @@ def set_adapter(target_hci: str) -> dict:
         return build_status(ok=False, error=f"Adapter switch failed: {exc}")
 
     for _ in range(10):
-        _, _, new_hci, _, _ = get_bt_device_info()
+        _, new_profile, new_hci, new_card, _ = get_bt_device_info()
         if new_hci == target_name:
+            if new_card and (not new_profile or new_profile == "off"):
+                subprocess.run(
+                    ["pactl", "set-card-profile", new_card, "a2dp-sink"],
+                    capture_output=True,
+                    text=True,
+                    timeout=5,
+                    check=False,
+                )
             return build_status(ok=True)
         time.sleep(0.3)
 

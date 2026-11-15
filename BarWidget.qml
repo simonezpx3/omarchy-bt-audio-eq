@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Effects
 import Quickshell
 import Quickshell.Io
 import qs.Commons as Commons
@@ -334,6 +335,10 @@ BarWidget {
     bar: root.bar
     text: {
       const xruns = (root.telemetry && root.telemetry.xruns > 0) ? ("!" + root.telemetry.xruns) : "";
+      if (!root.deviceName) {
+        if (root.busy) return (root.bar && root.bar.vertical) ? "..." : "EQ ...";
+        return "EQ" + (xruns ? (" " + xruns) : "");
+      }
       const c = (root.telemetry && root.telemetry.codec) ? root.telemetry.codec : "LDAC";
       if (root.busy) return (root.bar && root.bar.vertical) ? "..." : (c + " ...");
       if (!root.qualityConfigurable) {
@@ -342,11 +347,45 @@ BarWidget {
       if (root.bar && root.bar.vertical) return root.currentLabel + xruns;
       return c + " " + root.currentLabel + (xruns ? (" " + xruns) : "");
     }
-    labelVisible: true
+    labelVisible: false
+    fixedWidth: (root.bar && root.bar.vertical) ? -1 : Commons.Style.bar.iconSlot
+    fixedHeight: (root.bar && root.bar.vertical) ? Commons.Style.bar.iconSlot : -1
     keepSpace: true
     hasVisualContent: true
     active: root.opened
     horizontalMargin: 8.5
+
+    Item {
+      id: pillIconSlot
+      anchors.centerIn: parent
+      width: Commons.Style.bar.iconSize
+      height: Commons.Style.bar.iconSize
+      scale: button.pressScale
+
+      Image {
+        id: barIcon
+        anchors.fill: parent
+        source: Qt.resolvedUrl(root.deviceName ? "assets/headphones.svg" : "assets/eq-bars.svg")
+        sourceSize.width: Commons.Style.bar.iconSize * 2
+        sourceSize.height: Commons.Style.bar.iconSize * 2
+        smooth: true
+        asynchronous: true
+        visible: false
+        layer.enabled: true
+      }
+
+      Rectangle {
+        anchors.fill: barIcon
+        color: button.active && button.useActiveColor ? button.activeColor : button.foreground
+        layer.enabled: true
+        layer.effect: MultiEffect {
+          maskEnabled: true
+          maskSource: barIcon
+          maskThresholdMin: 0.5
+          maskSpreadAtMin: 1.0
+        }
+      }
+    }
 
     tooltipText: {
       const codec = root.safeTooltipText((root.telemetry && root.telemetry.codec) ? root.telemetry.codec : "LDAC", 24);

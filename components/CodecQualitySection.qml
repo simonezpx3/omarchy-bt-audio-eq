@@ -23,16 +23,6 @@ ColumnLayout {
     Layout.fillWidth: true
     spacing: Style.space(6)
   
-    Text {
-      text: "CODEC"
-      textFormat: Text.PlainText
-      color: Qt.rgba(cqRoot.foreground.r, cqRoot.foreground.g, cqRoot.foreground.b, 0.55)
-      font.family: cqRoot.uiFont
-      font.pixelSize: Style.font.caption
-      font.bold: true
-      font.letterSpacing: 1.2
-    }
-  
     RowLayout {
       Layout.fillWidth: true
       spacing: Style.space(6)
@@ -78,26 +68,6 @@ ColumnLayout {
   ColumnLayout {
     Layout.fillWidth: true
     spacing: Style.space(6)
-  
-    Text {
-      text: "QUALITY"
-      textFormat: Text.PlainText
-      color: Qt.rgba(cqRoot.foreground.r, cqRoot.foreground.g, cqRoot.foreground.b, 0.55)
-      font.family: cqRoot.uiFont
-      font.pixelSize: Style.font.caption
-      font.bold: true
-      font.letterSpacing: 1.2
-    }
-  
-    Text {
-      visible: !cqRoot.qualityConfigurable
-      Layout.fillWidth: true
-      text: cqRoot.qualityNote
-      textFormat: Text.PlainText
-      color: Qt.rgba(cqRoot.foreground.r, cqRoot.foreground.g, cqRoot.foreground.b, 0.6)
-      font.family: cqRoot.uiFont
-      font.pixelSize: Style.font.bodySmall
-    }
   
     RowLayout {
       visible: cqRoot.qualityConfigurable
@@ -212,15 +182,6 @@ ColumnLayout {
       visible: cqRoot.hostWidget && cqRoot.hostWidget.adapters && cqRoot.hostWidget.adapters.length >= 2
       Layout.fillWidth: true
       spacing: Style.space(6)
-
-      Text {
-        text: "ADAPTER"
-        textFormat: Text.PlainText
-        color: Qt.rgba(cqRoot.foreground.r, cqRoot.foreground.g, cqRoot.foreground.b, 0.55)
-        font.family: cqRoot.uiFont
-        font.pixelSize: Style.font.xs
-        font.bold: true
-      }
 
       RowLayout {
         Layout.fillWidth: true

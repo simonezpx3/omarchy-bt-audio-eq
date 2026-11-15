@@ -159,6 +159,7 @@ def get_sink_telemetry() -> dict:
 
         if sys_block:
             sname_m = re.search(r"Name:\s*(\S+)", sys_block)
+            state_m = re.search(r"State:\s*(\S+)", sys_block)
             desc_m = re.search(r"Description:\s*(.+)", sys_block)
             sample_m = re.search(r"Sample Specification:\s*(.+)", sys_block)
             vol_m = re.search(r"Volume:.*?(\d+)%", sys_block)
@@ -167,13 +168,18 @@ def get_sink_telemetry() -> dict:
             data["isBluetooth"] = False
             data["systemDevice"] = desc_m.group(1).strip() if desc_m else "System Audio"
             sample_str = sample_m.group(1).strip() if sample_m else ""
-            hz_m = re.search(r"(\d+)\s*Hz", sample_str)
-            if hz_m:
-                khz = int(hz_m.group(1)) / 1000.0
-                khz_str = f"{int(khz)}k" if khz.is_integer() else f"{khz:.1f}k"
-                data["codec"] = f"PCM {khz_str}"
+            sink_state = state_m.group(1).strip().upper() if state_m else ""
+            force_rate = get_system_rate_info()[0] if sink_state in {"SUSPENDED", "IDLE"} else 0
+            if force_rate > 0:
+                if re.search(r"\d+\s*Hz", sample_str):
+                    sample_str = re.sub(r"\d+\s*Hz", f"{force_rate}Hz", sample_str)
+                data["codec"] = f"PCM {_format_rate_label(force_rate)}"
             else:
-                data["codec"] = "PCM"
+                hz_m = re.search(r"(\d+)\s*Hz", sample_str)
+                if hz_m:
+                    data["codec"] = f"PCM {_format_rate_label(int(hz_m.group(1)))}"
+                else:
+                    data["codec"] = "PCM"
             data["sample"] = sample_str
             data["volume"] = int(vol_m.group(1)) if vol_m else -1
             data["muted"] = bool(mute_m and mute_m.group(1) == "yes")

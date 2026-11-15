@@ -19,22 +19,6 @@ ColumnLayout {
   Layout.fillWidth: true
   spacing: Style.space(6)
 
-  RowLayout {
-    Layout.fillWidth: true
-    spacing: Style.space(8)
-
-    Text {
-      Layout.fillWidth: true
-      text: "10-BAND EQ (±15 DB)"
-      textFormat: Text.PlainText
-      color: Qt.rgba(eqRoot.foreground.r, eqRoot.foreground.g, eqRoot.foreground.b, 0.55)
-      font.family: eqRoot.uiFont
-      font.pixelSize: Style.font.caption
-      font.bold: true
-      font.letterSpacing: 1.2
-    }
-  }
-
   // Dedicated full-width AutoEq row (search selector + ON/OFF toggle)
   RowLayout {
     Layout.fillWidth: true
@@ -51,11 +35,15 @@ ColumnLayout {
 
       RowLayout {
         id: autoeqBarRow
-        anchors.fill: parent
-        anchors.margins: Style.space(8)
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.verticalCenter: parent.verticalCenter
+        anchors.leftMargin: Style.space(8)
+        anchors.rightMargin: Style.space(8)
         spacing: Style.space(8)
 
         Text {
+          Layout.alignment: Qt.AlignVCenter
           text: "AutoEq"
           textFormat: Text.PlainText
           color: Qt.rgba(eqRoot.foreground.r, eqRoot.foreground.g, eqRoot.foreground.b, 0.65)
@@ -66,6 +54,7 @@ ColumnLayout {
 
         Text {
           Layout.fillWidth: true
+          Layout.alignment: Qt.AlignVCenter
           horizontalAlignment: Text.AlignRight
           elide: Text.ElideRight
           text: (eqRoot.eq && eqRoot.eq.autoeq) ? eqRoot.eq.autoeq : "Select headphones..."
@@ -77,6 +66,7 @@ ColumnLayout {
         }
 
         Text {
+          Layout.alignment: Qt.AlignVCenter
           text: eqRoot.autoeqOpen ? "▴" : "▾"
           textFormat: Text.PlainText
           color: eqRoot.autoeqOpen ? eqRoot.accent : Qt.rgba(eqRoot.foreground.r, eqRoot.foreground.g, eqRoot.foreground.b, 0.55)
@@ -265,6 +255,7 @@ ColumnLayout {
           required property int index
           readonly property real externalVal: (eqRoot.eq.bands && eqRoot.eq.bands.length > index) ? Number(eqRoot.eq.bands[index]) : 0
           Layout.fillWidth: true
+          Layout.preferredWidth: 1
           spacing: Style.space(4)
 
           Timer {
@@ -279,13 +270,15 @@ ColumnLayout {
           }
 
           Text {
-            Layout.alignment: Qt.AlignHCenter
+            Layout.fillWidth: true
+            horizontalAlignment: Text.AlignHCenter
             text: (bandSlider.value > 0 ? "+" : "") + bandSlider.value.toFixed(1)
             textFormat: Text.PlainText
             color: bandSlider.value !== 0 && eqRoot.eq.enabled ? eqRoot.accent : Qt.rgba(eqRoot.foreground.r, eqRoot.foreground.g, eqRoot.foreground.b, 0.75)
             font.family: eqRoot.uiFont
             font.pixelSize: Style.font.caption
             font.bold: bandSlider.value !== 0
+            font.features: ({ "tnum": 1 })
           }
 
           Slider {

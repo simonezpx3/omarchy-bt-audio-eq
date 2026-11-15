@@ -110,7 +110,7 @@ Panel {
       // 1. HERO HEADER
       Item {
         Layout.fillWidth: true
-        implicitHeight: Math.max(heroIcon.implicitHeight, heroLabels.implicitHeight, heroActions.implicitHeight)
+        implicitHeight: Math.max(heroIcon.implicitHeight, heroLabels.implicitHeight)
 
         Text {
           id: heroIcon
@@ -123,35 +123,11 @@ Panel {
           font.pixelSize: Style.font.display
         }
 
-        RowLayout {
-          id: heroActions
-          anchors.right: parent.right
-          anchors.verticalCenter: parent.verticalCenter
-          spacing: Style.space(8)
-
-          ToggleSwitch {
-            id: eqPowerSwitch
-            checked: root.eq.enabled
-            foreground: root.foreground
-            Layout.alignment: Qt.AlignVCenter
-            onToggled: {
-              if (root.hostWidget) root.hostWidget.toggleEq();
-            }
-
-            PanelToolTip {
-              visible: eqPowerSwitch.containsMouse
-              text: root.eq.enabled ? "Disable 10-Band EQ" : "Enable 10-Band EQ"
-              fontFamily: root.uiFont
-            }
-          }
-        }
-
         Column {
           id: heroLabels
           anchors.left: heroIcon.right
           anchors.leftMargin: Style.space(12)
-          anchors.right: heroActions.left
-          anchors.rightMargin: Style.space(10)
+          anchors.right: parent.right
           anchors.verticalCenter: parent.verticalCenter
           spacing: Style.space(2)
 
