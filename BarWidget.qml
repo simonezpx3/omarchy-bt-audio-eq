@@ -4,6 +4,7 @@ import Quickshell
 import Quickshell.Io
 import qs.Commons as Commons
 import qs.Ui
+import "components"
 
 BarWidget {
   id: root
@@ -240,54 +241,41 @@ BarWidget {
   onBarChanged: injectPanel()
   onSettingsChanged: injectPanel()
 
-  Process {
+  BoundedProcess {
     id: statusProc
-    stdout: StdioCollector {
-      onStreamFinished: {
-        if (text && text.trim().length > 0) {
-          root.applyStatus(text.trim());
-        }
+    onFinished: function(stdoutText, stderrText, wasOverflowed) {
+      if (!wasOverflowed && stdoutText.length > 0) {
+        root.applyStatus(stdoutText);
       }
     }
   }
 
-  Process {
+  BoundedProcess {
     id: setProc
-    stdout: StdioCollector {
-      onStreamFinished: {
-        root.busy = false;
-        if (text && text.trim().length > 0) {
-          root.applyStatus(text.trim());
-        }
-      }
-    }
-    stderr: StdioCollector {
-      onStreamFinished: {
-        root.busy = false;
-        if (text && text.trim().length > 0 && root.lastError.length === 0) {
-          root.lastError = text.trim();
-        }
+    onFinished: function(stdoutText, stderrText, wasOverflowed) {
+      root.busy = false;
+      if (!wasOverflowed && stdoutText.length > 0) {
+        root.applyStatus(stdoutText);
+      } else if (stderrText.length > 0 && root.lastError.length === 0) {
+        root.lastError = stderrText;
       }
     }
   }
 
-  Process {
+  BoundedProcess {
     id: autoeqSearchProc
-    stdout: StdioCollector {
-      onStreamFinished: {
-        root.autoeqSearching = false;
-        try {
-          const data = JSON.parse(text.trim());
-          root.autoeqResults = data.results ? data.results : [];
-          if (data.error) root.lastError = String(data.error);
-        } catch (e) {
-          root.lastError = "Invalid AutoEq search response";
-        }
+    onFinished: function(stdoutText, stderrText, wasOverflowed) {
+      root.autoeqSearching = false;
+      if (wasOverflowed || stdoutText.length === 0) {
+        if (wasOverflowed) root.lastError = "AutoEq search response exceeded limit";
+        return;
       }
-    }
-    stderr: StdioCollector {
-      onStreamFinished: {
-        root.autoeqSearching = false;
+      try {
+        const data = JSON.parse(stdoutText);
+        root.autoeqResults = data.results ? data.results : [];
+        if (data.error) root.lastError = String(data.error);
+      } catch (e) {
+        root.lastError = "Invalid AutoEq search response";
       }
     }
   }

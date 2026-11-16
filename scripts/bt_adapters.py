@@ -1,8 +1,10 @@
 """BlueZ multi-adapter discovery, pairing, and state persistence helpers."""
 
 import json
+import os
 import re
 import subprocess
+import tempfile
 from pathlib import Path
 
 LAST_DEVICE_PATH = Path.home() / ".local/state/simonez-btquality/last_device.json"
@@ -36,12 +38,26 @@ def load_last_bt_device() -> dict:
 
 
 def save_last_bt_device(mac: str, name: str = "") -> None:
-    """Persist last seen Bluetooth audio device {mac, name}."""
+    """Persist last seen Bluetooth audio device {mac, name} atomically (0600)."""
     if not is_mac(mac):
         return
     try:
         LAST_DEVICE_PATH.parent.mkdir(parents=True, exist_ok=True)
-        LAST_DEVICE_PATH.write_text(json.dumps({"mac": mac, "name": name}), encoding="utf-8")
+        fd, tmp_name = tempfile.mkstemp(
+            prefix=f".{LAST_DEVICE_PATH.name}.",
+            dir=str(LAST_DEVICE_PATH.parent),
+        )
+        try:
+            os.fchmod(fd, 0o600)
+            with os.fdopen(fd, "w", encoding="utf-8") as fh:
+                fh.write(json.dumps({"mac": mac, "name": name}))
+            os.replace(tmp_name, LAST_DEVICE_PATH)
+        except Exception:
+            try:
+                os.unlink(tmp_name)
+            except OSError:
+                pass
+            raise
     except OSError:
         pass
 
